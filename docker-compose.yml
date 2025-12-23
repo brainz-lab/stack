@@ -1,0 +1,166 @@
+# Brainz Lab Stack - Self-Hosted Deployment
+# ==========================================
+#
+# Quick start:
+#   ./scripts/setup.sh
+#   ./scripts/start.sh
+#
+# Or manually:
+#   docker-compose up -d
+#
+# Access:
+#   Platform: http://localhost:3000
+#   Recall:   http://localhost:3001
+#   Reflex:   http://localhost:3002
+#   Pulse:    http://localhost:3003
+
+services:
+  # ============================================
+  # INFRASTRUCTURE
+  # ============================================
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: brainzlab-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-brainzlab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brainzlab}
+      POSTGRES_DB: ${POSTGRES_DB:-brainzlab}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-brainzlab}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: brainzlab-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # PLATFORM - Auth, Billing, API Keys
+  # ============================================
+  platform:
+    image: ${PLATFORM_IMAGE:-brainzllc/platform:latest}
+    container_name: brainzlab-platform
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@postgres:5432/platform
+      REDIS_URL: redis://redis:6379/0
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${PLATFORM_MASTER_KEY}
+      SECRET_KEY_BASE: ${PLATFORM_SECRET_KEY:-$(openssl rand -hex 64)}
+      PLATFORM_URL: ${PLATFORM_URL:-http://localhost:3000}
+      # OAuth (optional)
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # Stripe (optional)
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    ports:
+      - "${PLATFORM_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ============================================
+  # RECALL - Structured Logging
+  # ============================================
+  recall:
+    image: ${RECALL_IMAGE:-brainzllc/recall:latest}
+    container_name: brainzlab-recall
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@postgres:5432/recall
+      REDIS_URL: redis://redis:6379/1
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${RECALL_MASTER_KEY}
+      SECRET_KEY_BASE: ${RECALL_SECRET_KEY:-$(openssl rand -hex 64)}
+      BRAINZLAB_PLATFORM_URL: http://platform:3000
+      SERVICE_KEY: ${SERVICE_KEY:-brainzlab_service_key}
+      RECALL_MASTER_KEY: ${RECALL_INGEST_KEY:-rcl_master_$(openssl rand -hex 16)}
+    ports:
+      - "${RECALL_PORT:-3001}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      platform:
+        condition: service_started
+
+  # ============================================
+  # REFLEX - Error Tracking
+  # ============================================
+  reflex:
+    image: ${REFLEX_IMAGE:-brainzllc/reflex:latest}
+    container_name: brainzlab-reflex
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@postgres:5432/reflex
+      REDIS_URL: redis://redis:6379/2
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${REFLEX_MASTER_KEY}
+      SECRET_KEY_BASE: ${REFLEX_SECRET_KEY:-$(openssl rand -hex 64)}
+      BRAINZLAB_PLATFORM_URL: http://platform:3000
+      SERVICE_KEY: ${SERVICE_KEY:-brainzlab_service_key}
+      REFLEX_MASTER_KEY: ${REFLEX_INGEST_KEY:-rfx_master_$(openssl rand -hex 16)}
+    ports:
+      - "${REFLEX_PORT:-3002}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      platform:
+        condition: service_started
+
+  # ============================================
+  # PULSE - APM & Performance Monitoring
+  # ============================================
+  pulse:
+    image: ${PULSE_IMAGE:-brainzllc/pulse:latest}
+    container_name: brainzlab-pulse
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@postgres:5432/pulse
+      REDIS_URL: redis://redis:6379/3
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${PULSE_MASTER_KEY}
+      SECRET_KEY_BASE: ${PULSE_SECRET_KEY:-$(openssl rand -hex 64)}
+      BRAINZLAB_PLATFORM_URL: http://platform:3000
+      SERVICE_KEY: ${SERVICE_KEY:-brainzlab_service_key}
+      PULSE_MASTER_KEY: ${PULSE_INGEST_KEY:-pls_master_$(openssl rand -hex 16)}
+    ports:
+      - "${PULSE_PORT:-3003}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      platform:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
