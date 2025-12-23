@@ -11,7 +11,6 @@ Brainz Lab provides complete observability for your Rails apps:
 - **Recall** - Structured logging with powerful search
 - **Reflex** - Error tracking with smart grouping
 - **Pulse** - APM with distributed tracing
-- **Platform** - Authentication, billing, API keys
 
 ## Quick Install
 
@@ -31,13 +30,12 @@ cd stack
 ## Requirements
 
 - Docker & Docker Compose
-- 4GB RAM minimum (8GB recommended)
+- 2GB RAM minimum (4GB recommended)
 
 ## Services
 
 | Service | Port | Description |
 |---------|------|-------------|
-| Platform | 3000 | Auth, billing, API keys |
 | Recall | 3001 | Structured logging |
 | Reflex | 3002 | Error tracking |
 | Pulse | 3003 | APM & tracing |
@@ -89,11 +87,6 @@ BrainzLab.configure do |config|
   config.recall_url = 'http://localhost:3001'
   config.reflex_url = 'http://localhost:3002'
   config.pulse_url = 'http://localhost:3003'
-
-  # Or use environment variables
-  # config.recall_url = ENV['RECALL_URL']
-  # config.reflex_url = ENV['REFLEX_URL']
-  # config.pulse_url = ENV['PULSE_URL']
 end
 ```
 
@@ -127,7 +120,6 @@ cp .env.example .env
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `POSTGRES_PASSWORD` | Database password | `brainzlab` |
-| `PLATFORM_PORT` | Platform port | `3000` |
 | `RECALL_PORT` | Recall port | `3001` |
 | `REFLEX_PORT` | Reflex port | `3002` |
 | `PULSE_PORT` | Pulse port | `3003` |
@@ -137,7 +129,6 @@ cp .env.example .env
 To use GHCR instead of Docker Hub:
 
 ```env
-PLATFORM_IMAGE=ghcr.io/brainz-lab/platform:latest
 RECALL_IMAGE=ghcr.io/brainz-lab/recall:latest
 REFLEX_IMAGE=ghcr.io/brainz-lab/reflex:latest
 PULSE_IMAGE=ghcr.io/brainz-lab/pulse:latest
@@ -152,23 +143,17 @@ For production, we recommend:
 3. **Configure proper secrets** in `.env`
 4. **Set up backups** for PostgreSQL
 
-### With Traefik (HTTPS)
-
-See `docker-compose.traefik.yml` for a production-ready setup with automatic SSL.
-
 ### Environment Variables for Production
 
 ```env
 # Required
 POSTGRES_PASSWORD=<strong-password>
-PLATFORM_MASTER_KEY=<generated-key>
 RECALL_MASTER_KEY=<generated-key>
 REFLEX_MASTER_KEY=<generated-key>
 PULSE_MASTER_KEY=<generated-key>
 SERVICE_KEY=<generated-key>
 
 # URLs (your domain)
-PLATFORM_URL=https://platform.yourdomain.com
 RECALL_URL=https://recall.yourdomain.com
 REFLEX_URL=https://reflex.yourdomain.com
 PULSE_URL=https://pulse.yourdomain.com
@@ -190,14 +175,14 @@ PULSE_URL=https://pulse.yourdomain.com
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Brainz Lab Stack                            │
 │                                                                  │
-│   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│   │ Platform │  │  Recall  │  │  Reflex  │  │  Pulse   │       │
-│   │  :3000   │  │  :3001   │  │  :3002   │  │  :3003   │       │
-│   └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
-│        │             │             │             │              │
-│   ┌────┴─────────────┴─────────────┴─────────────┴────┐        │
-│   │              PostgreSQL + Redis                    │        │
-│   └────────────────────────────────────────────────────┘        │
+│       ┌──────────┐    ┌──────────┐    ┌──────────┐             │
+│       │  Recall  │    │  Reflex  │    │  Pulse   │             │
+│       │  :3001   │    │  :3002   │    │  :3003   │             │
+│       └────┬─────┘    └────┬─────┘    └────┬─────┘             │
+│            │               │               │                    │
+│       ┌────┴───────────────┴───────────────┴────┐              │
+│       │          PostgreSQL + Redis              │              │
+│       └──────────────────────────────────────────┘              │
 └─────────────────────────────────────────────────────────────────┘
 ```
 

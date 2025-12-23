@@ -39,7 +39,6 @@ check_service() {
   return 0
 }
 
-check_service "Platform" 3000
 check_service "Recall" 3001
 check_service "Reflex" 3002
 check_service "Pulse" 3003
@@ -48,7 +47,6 @@ echo ""
 echo "✅ Brainz Lab Stack is running!"
 echo ""
 echo "📍 Services:"
-echo "   Platform: http://localhost:3000"
 echo "   Recall:   http://localhost:3001"
 echo "   Reflex:   http://localhost:3002"
 echo "   Pulse:    http://localhost:3003"

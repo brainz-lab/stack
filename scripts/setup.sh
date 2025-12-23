@@ -12,27 +12,39 @@ if [ ! -f .env ]; then
   echo "📝 Creating .env file..."
   cp .env.example .env
 
-  # Generate master keys
-  echo "🔑 Generating master keys..."
-  PLATFORM_KEY=$(openssl rand -hex 32)
-  RECALL_KEY=$(openssl rand -hex 32)
-  REFLEX_KEY=$(openssl rand -hex 32)
-  PULSE_KEY=$(openssl rand -hex 32)
-  SERVICE_KEY=$(openssl rand -hex 32)
+  # Generate keys
+  echo "🔑 Generating keys..."
+  RECALL_MASTER=$(openssl rand -hex 32)
+  REFLEX_MASTER=$(openssl rand -hex 32)
+  PULSE_MASTER=$(openssl rand -hex 32)
+  RECALL_SECRET=$(openssl rand -hex 64)
+  REFLEX_SECRET=$(openssl rand -hex 64)
+  PULSE_SECRET=$(openssl rand -hex 64)
+  RECALL_INGEST="rcl_$(openssl rand -hex 16)"
+  REFLEX_INGEST="rfx_$(openssl rand -hex 16)"
+  PULSE_INGEST="pls_$(openssl rand -hex 16)"
 
   # Update .env with generated keys
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/^PLATFORM_MASTER_KEY=.*/PLATFORM_MASTER_KEY=$PLATFORM_KEY/" .env
-    sed -i '' "s/^RECALL_MASTER_KEY=.*/RECALL_MASTER_KEY=$RECALL_KEY/" .env
-    sed -i '' "s/^REFLEX_MASTER_KEY=.*/REFLEX_MASTER_KEY=$REFLEX_KEY/" .env
-    sed -i '' "s/^PULSE_MASTER_KEY=.*/PULSE_MASTER_KEY=$PULSE_KEY/" .env
-    sed -i '' "s/^SERVICE_KEY=.*/SERVICE_KEY=$SERVICE_KEY/" .env
+    sed -i '' "s/^RECALL_MASTER_KEY=.*/RECALL_MASTER_KEY=$RECALL_MASTER/" .env
+    sed -i '' "s/^REFLEX_MASTER_KEY=.*/REFLEX_MASTER_KEY=$REFLEX_MASTER/" .env
+    sed -i '' "s/^PULSE_MASTER_KEY=.*/PULSE_MASTER_KEY=$PULSE_MASTER/" .env
+    sed -i '' "s/^RECALL_SECRET_KEY=.*/RECALL_SECRET_KEY=$RECALL_SECRET/" .env
+    sed -i '' "s/^REFLEX_SECRET_KEY=.*/REFLEX_SECRET_KEY=$REFLEX_SECRET/" .env
+    sed -i '' "s/^PULSE_SECRET_KEY=.*/PULSE_SECRET_KEY=$PULSE_SECRET/" .env
+    sed -i '' "s/^RECALL_INGEST_KEY=.*/RECALL_INGEST_KEY=$RECALL_INGEST/" .env
+    sed -i '' "s/^REFLEX_INGEST_KEY=.*/REFLEX_INGEST_KEY=$REFLEX_INGEST/" .env
+    sed -i '' "s/^PULSE_INGEST_KEY=.*/PULSE_INGEST_KEY=$PULSE_INGEST/" .env
   else
-    sed -i "s/^PLATFORM_MASTER_KEY=.*/PLATFORM_MASTER_KEY=$PLATFORM_KEY/" .env
-    sed -i "s/^RECALL_MASTER_KEY=.*/RECALL_MASTER_KEY=$RECALL_KEY/" .env
-    sed -i "s/^REFLEX_MASTER_KEY=.*/REFLEX_MASTER_KEY=$REFLEX_KEY/" .env
-    sed -i "s/^PULSE_MASTER_KEY=.*/PULSE_MASTER_KEY=$PULSE_KEY/" .env
-    sed -i "s/^SERVICE_KEY=.*/SERVICE_KEY=$SERVICE_KEY/" .env
+    sed -i "s/^RECALL_MASTER_KEY=.*/RECALL_MASTER_KEY=$RECALL_MASTER/" .env
+    sed -i "s/^REFLEX_MASTER_KEY=.*/REFLEX_MASTER_KEY=$REFLEX_MASTER/" .env
+    sed -i "s/^PULSE_MASTER_KEY=.*/PULSE_MASTER_KEY=$PULSE_MASTER/" .env
+    sed -i "s/^RECALL_SECRET_KEY=.*/RECALL_SECRET_KEY=$RECALL_SECRET/" .env
+    sed -i "s/^REFLEX_SECRET_KEY=.*/REFLEX_SECRET_KEY=$REFLEX_SECRET/" .env
+    sed -i "s/^PULSE_SECRET_KEY=.*/PULSE_SECRET_KEY=$PULSE_SECRET/" .env
+    sed -i "s/^RECALL_INGEST_KEY=.*/RECALL_INGEST_KEY=$RECALL_INGEST/" .env
+    sed -i "s/^REFLEX_INGEST_KEY=.*/REFLEX_INGEST_KEY=$REFLEX_INGEST/" .env
+    sed -i "s/^PULSE_INGEST_KEY=.*/PULSE_INGEST_KEY=$PULSE_INGEST/" .env
   fi
 
   echo "✅ Generated secure keys"

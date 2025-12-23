@@ -5,20 +5,36 @@
 #   ./scripts/setup.sh
 #   ./scripts/start.sh
 #
-# Or manually:
-#   docker-compose up -d
+# Access via subdomains (add to /etc/hosts):
+#   recall.localhost  → Recall (logging)
+#   reflex.localhost  → Reflex (errors)
+#   pulse.localhost   → Pulse (APM)
 #
-# Access:
-#   Platform: http://localhost:3000
-#   Recall:   http://localhost:3001
-#   Reflex:   http://localhost:3002
-#   Pulse:    http://localhost:3003
+# Or via ports:
+#   http://localhost:3001 → Recall
+#   http://localhost:3002 → Reflex
+#   http://localhost:3003 → Pulse
+#
+# Traefik dashboard: http://localhost:8080
 
 services:
   # ============================================
+  # TRAEFIK - Reverse Proxy
+  # ============================================
+  traefik:
+    image: traefik:v3.0
+    container_name: brainzlab-traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/routes.yml:/etc/traefik/routes.yml:ro
+
+  # ============================================
   # INFRASTRUCTURE
   # ============================================
-
   postgres:
     image: postgres:16-alpine
     container_name: brainzlab-postgres
@@ -54,36 +70,6 @@ services:
       retries: 5
 
   # ============================================
-  # PLATFORM - Auth, Billing, API Keys
-  # ============================================
-  platform:
-    image: ${PLATFORM_IMAGE:-brainzllc/platform:latest}
-    container_name: brainzlab-platform
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@postgres:5432/platform
-      REDIS_URL: redis://redis:6379/0
-      RAILS_ENV: production
-      RAILS_MASTER_KEY: ${PLATFORM_MASTER_KEY}
-      SECRET_KEY_BASE: ${PLATFORM_SECRET_KEY:-$(openssl rand -hex 64)}
-      PLATFORM_URL: ${PLATFORM_URL:-http://localhost:3000}
-      # OAuth (optional)
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      # Stripe (optional)
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
-    ports:
-      - "${PLATFORM_PORT:-3000}:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  # ============================================
   # RECALL - Structured Logging
   # ============================================
   recall:
@@ -95,10 +81,8 @@ services:
       REDIS_URL: redis://redis:6379/1
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${RECALL_MASTER_KEY}
-      SECRET_KEY_BASE: ${RECALL_SECRET_KEY:-$(openssl rand -hex 64)}
-      BRAINZLAB_PLATFORM_URL: http://platform:3000
-      SERVICE_KEY: ${SERVICE_KEY:-brainzlab_service_key}
-      RECALL_MASTER_KEY: ${RECALL_INGEST_KEY:-rcl_master_$(openssl rand -hex 16)}
+      SECRET_KEY_BASE: ${RECALL_SECRET_KEY}
+      RECALL_MASTER_KEY: ${RECALL_INGEST_KEY}
     ports:
       - "${RECALL_PORT:-3001}:3000"
     depends_on:
@@ -106,8 +90,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      platform:
-        condition: service_started
 
   # ============================================
   # REFLEX - Error Tracking
@@ -121,10 +103,8 @@ services:
       REDIS_URL: redis://redis:6379/2
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${REFLEX_MASTER_KEY}
-      SECRET_KEY_BASE: ${REFLEX_SECRET_KEY:-$(openssl rand -hex 64)}
-      BRAINZLAB_PLATFORM_URL: http://platform:3000
-      SERVICE_KEY: ${SERVICE_KEY:-brainzlab_service_key}
-      REFLEX_MASTER_KEY: ${REFLEX_INGEST_KEY:-rfx_master_$(openssl rand -hex 16)}
+      SECRET_KEY_BASE: ${REFLEX_SECRET_KEY}
+      REFLEX_MASTER_KEY: ${REFLEX_INGEST_KEY}
     ports:
       - "${REFLEX_PORT:-3002}:3000"
     depends_on:
@@ -132,8 +112,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      platform:
-        condition: service_started
 
   # ============================================
   # PULSE - APM & Performance Monitoring
@@ -147,10 +125,8 @@ services:
       REDIS_URL: redis://redis:6379/3
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${PULSE_MASTER_KEY}
-      SECRET_KEY_BASE: ${PULSE_SECRET_KEY:-$(openssl rand -hex 64)}
-      BRAINZLAB_PLATFORM_URL: http://platform:3000
-      SERVICE_KEY: ${SERVICE_KEY:-brainzlab_service_key}
-      PULSE_MASTER_KEY: ${PULSE_INGEST_KEY:-pls_master_$(openssl rand -hex 16)}
+      SECRET_KEY_BASE: ${PULSE_SECRET_KEY}
+      PULSE_MASTER_KEY: ${PULSE_INGEST_KEY}
     ports:
       - "${PULSE_PORT:-3003}:3000"
     depends_on:
@@ -158,8 +134,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      platform:
-        condition: service_started
 
 volumes:
   postgres_data:

@@ -1,0 +1,36 @@
+# Traefik dynamic configuration - routes
+http:
+  routers:
+    recall:
+      rule: "Host(`recall.localhost`)"
+      service: recall
+      entryPoints:
+        - web
+
+    reflex:
+      rule: "Host(`reflex.localhost`)"
+      service: reflex
+      entryPoints:
+        - web
+
+    pulse:
+      rule: "Host(`pulse.localhost`)"
+      service: pulse
+      entryPoints:
+        - web
+
+  services:
+    recall:
+      loadBalancer:
+        servers:
+          - url: "http://recall:3000"
+
+    reflex:
+      loadBalancer:
+        servers:
+          - url: "http://reflex:3000"
+
+    pulse:
+      loadBalancer:
+        servers:
+          - url: "http://pulse:3000"
