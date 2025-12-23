@@ -3,6 +3,7 @@
 Self-hosted observability platform for Rails applications.
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-brainzlab.ai-orange)](https://docs.brainzlab.ai/self-hosting/overview)
 
 ## Overview
 
@@ -200,10 +201,14 @@ pulse.yourdomain.com   → Your server IP
 
 ## Documentation
 
-- [SDK Documentation](https://github.com/brainz-lab/brainzlab-ruby)
-- [Recall - Logging](https://github.com/brainz-lab/recall)
-- [Reflex - Errors](https://github.com/brainz-lab/reflex)
-- [Pulse - APM](https://github.com/brainz-lab/pulse)
+Full documentation: [docs.brainzlab.ai/self-hosting](https://docs.brainzlab.ai/self-hosting/overview)
+
+## Related
+
+- [brainzlab-ruby](https://github.com/brainz-lab/brainzlab-ruby) - Ruby SDK
+- [Recall](https://github.com/brainz-lab/recall) - Logging service
+- [Reflex](https://github.com/brainz-lab/reflex) - Error tracking service
+- [Pulse](https://github.com/brainz-lab/pulse) - APM service
 
 ## License
 
