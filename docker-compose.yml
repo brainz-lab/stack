@@ -35,9 +35,9 @@ services:
   # ============================================
   # INFRASTRUCTURE
   # ============================================
-  postgres:
-    image: postgres:16-alpine
-    container_name: brainzlab-postgres
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: brainzlab-timescaledb
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-brainzlab}
@@ -53,6 +53,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    command: >
+      postgres
+      -c shared_preload_libraries=timescaledb
+      -c timescaledb.telemetry_level=off
 
   redis:
     image: redis:7-alpine
@@ -77,7 +81,7 @@ services:
     container_name: brainzlab-recall
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@postgres:5432/recall
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/recall
       REDIS_URL: redis://redis:6379/1
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${RECALL_MASTER_KEY}
@@ -86,7 +90,7 @@ services:
     ports:
       - "${RECALL_PORT:-3001}:3000"
     depends_on:
-      postgres:
+      timescaledb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -99,7 +103,7 @@ services:
     container_name: brainzlab-reflex
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@postgres:5432/reflex
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/reflex
       REDIS_URL: redis://redis:6379/2
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${REFLEX_MASTER_KEY}
@@ -108,7 +112,7 @@ services:
     ports:
       - "${REFLEX_PORT:-3002}:3000"
     depends_on:
-      postgres:
+      timescaledb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -121,7 +125,7 @@ services:
     container_name: brainzlab-pulse
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@postgres:5432/pulse
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/pulse
       REDIS_URL: redis://redis:6379/3
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${PULSE_MASTER_KEY}
@@ -130,7 +134,7 @@ services:
     ports:
       - "${PULSE_PORT:-3003}:3000"
     depends_on:
-      postgres:
+      timescaledb:
         condition: service_healthy
       redis:
         condition: service_healthy
