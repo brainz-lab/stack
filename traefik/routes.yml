@@ -1,20 +1,23 @@
 # Traefik dynamic configuration - routes
+# Domain hosts are configured via environment variables in docker-compose.yml
+# Default: recall.localhost, reflex.localhost, pulse.localhost
+# Production: recall.yourdomain.com, reflex.yourdomain.com, pulse.yourdomain.com
 http:
   routers:
     recall:
-      rule: "Host(`recall.localhost`)"
+      rule: "Host(`{{ env "RECALL_HOST" }}`)"
       service: recall
       entryPoints:
         - web
 
     reflex:
-      rule: "Host(`reflex.localhost`)"
+      rule: "Host(`{{ env "REFLEX_HOST" }}`)"
       service: reflex
       entryPoints:
         - web
 
     pulse:
-      rule: "Host(`pulse.localhost`)"
+      rule: "Host(`{{ env "PULSE_HOST" }}`)"
       service: pulse
       entryPoints:
         - web

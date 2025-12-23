@@ -83,12 +83,14 @@ gem 'brainzlab'
 BrainzLab.configure do |config|
   config.secret_key = ENV['BRAINZLAB_SECRET_KEY']
 
-  # Self-hosted URLs
-  config.recall_url = 'http://localhost:3001'
-  config.reflex_url = 'http://localhost:3002'
-  config.pulse_url = 'http://localhost:3003'
+  # Self-hosted URLs (via Traefik subdomains)
+  config.recall_url = ENV['RECALL_URL']  # http://recall.localhost or https://recall.yourdomain.com
+  config.reflex_url = ENV['REFLEX_URL']  # http://reflex.localhost or https://reflex.yourdomain.com
+  config.pulse_url  = ENV['PULSE_URL']   # http://pulse.localhost or https://pulse.yourdomain.com
 end
 ```
+
+> **Tip:** Run `./scripts/setup.sh` to generate keys and optionally export URLs to your shell profile.
 
 ### 3. Use
 
@@ -151,12 +153,22 @@ POSTGRES_PASSWORD=<strong-password>
 RECALL_MASTER_KEY=<generated-key>
 REFLEX_MASTER_KEY=<generated-key>
 PULSE_MASTER_KEY=<generated-key>
-SERVICE_KEY=<generated-key>
+BRAINZLAB_SECRET_KEY=<generated-key>
 
-# URLs (your domain)
+# URLs (Traefik subdomains - your domain)
 RECALL_URL=https://recall.yourdomain.com
 REFLEX_URL=https://reflex.yourdomain.com
 PULSE_URL=https://pulse.yourdomain.com
+```
+
+### DNS Configuration
+
+Set up DNS records for your Traefik subdomains:
+
+```
+recall.yourdomain.com  → Your server IP
+reflex.yourdomain.com  → Your server IP
+pulse.yourdomain.com   → Your server IP
 ```
 
 ## Architecture
