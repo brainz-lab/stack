@@ -1,7 +1,7 @@
 # Traefik dynamic configuration - routes
 # Domain hosts are configured via environment variables in docker-compose.yml
-# Default: recall.localhost, reflex.localhost, pulse.localhost
-# Production: recall.yourdomain.com, reflex.yourdomain.com, pulse.yourdomain.com
+# Default: recall.localhost, reflex.localhost, pulse.localhost, etc.
+# Production: recall.yourdomain.com, reflex.yourdomain.com, pulse.yourdomain.com, etc.
 http:
   routers:
     recall:
@@ -22,6 +22,42 @@ http:
       entryPoints:
         - web
 
+    flux:
+      rule: "Host(`{{ env "FLUX_HOST" }}`)"
+      service: flux
+      entryPoints:
+        - web
+
+    signal:
+      rule: "Host(`{{ env "SIGNAL_HOST" }}`)"
+      service: signal
+      entryPoints:
+        - web
+
+    vault:
+      rule: "Host(`{{ env "VAULT_HOST" }}`)"
+      service: vault
+      entryPoints:
+        - web
+
+    beacon:
+      rule: "Host(`{{ env "BEACON_HOST" }}`)"
+      service: beacon
+      entryPoints:
+        - web
+
+    vision:
+      rule: "Host(`{{ env "VISION_HOST" }}`)"
+      service: vision
+      entryPoints:
+        - web
+
+    sentinel:
+      rule: "Host(`{{ env "SENTINEL_HOST" }}`)"
+      service: sentinel
+      entryPoints:
+        - web
+
   services:
     recall:
       loadBalancer:
@@ -37,3 +73,33 @@ http:
       loadBalancer:
         servers:
           - url: "http://pulse:3000"
+
+    flux:
+      loadBalancer:
+        servers:
+          - url: "http://flux:3000"
+
+    signal:
+      loadBalancer:
+        servers:
+          - url: "http://signal:3000"
+
+    vault:
+      loadBalancer:
+        servers:
+          - url: "http://vault:3000"
+
+    beacon:
+      loadBalancer:
+        servers:
+          - url: "http://beacon:3000"
+
+    vision:
+      loadBalancer:
+        servers:
+          - url: "http://vision:3000"
+
+    sentinel:
+      loadBalancer:
+        servers:
+          - url: "http://sentinel:3000"

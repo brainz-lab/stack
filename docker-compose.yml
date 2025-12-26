@@ -6,14 +6,26 @@
 #   ./scripts/start.sh
 #
 # Access via subdomains (add to /etc/hosts):
-#   recall.localhost  → Recall (logging)
-#   reflex.localhost  → Reflex (errors)
-#   pulse.localhost   → Pulse (APM)
+#   recall.localhost   → Recall (logging)
+#   reflex.localhost   → Reflex (errors)
+#   pulse.localhost    → Pulse (APM)
+#   flux.localhost     → Flux (feature flags)
+#   signal.localhost   → Signal (alerting)
+#   vault.localhost    → Vault (secrets)
+#   beacon.localhost   → Beacon (uptime)
+#   vision.localhost   → Vision (visual testing)
+#   sentinel.localhost → Sentinel (infrastructure)
 #
 # Or via ports:
 #   http://localhost:3001 → Recall
 #   http://localhost:3002 → Reflex
 #   http://localhost:3003 → Pulse
+#   http://localhost:3004 → Flux
+#   http://localhost:3005 → Signal
+#   http://localhost:3006 → Vault
+#   http://localhost:3007 → Beacon
+#   http://localhost:3008 → Vision
+#   http://localhost:3009 → Sentinel
 #
 # Traefik dashboard: http://localhost:8080
 
@@ -28,6 +40,16 @@ services:
     ports:
       - "80:80"
       - "8080:8080"
+    environment:
+      - RECALL_HOST=${RECALL_HOST:-recall.localhost}
+      - REFLEX_HOST=${REFLEX_HOST:-reflex.localhost}
+      - PULSE_HOST=${PULSE_HOST:-pulse.localhost}
+      - FLUX_HOST=${FLUX_HOST:-flux.localhost}
+      - SIGNAL_HOST=${SIGNAL_HOST:-signal.localhost}
+      - VAULT_HOST=${VAULT_HOST:-vault.localhost}
+      - BEACON_HOST=${BEACON_HOST:-beacon.localhost}
+      - VISION_HOST=${VISION_HOST:-vision.localhost}
+      - SENTINEL_HOST=${SENTINEL_HOST:-sentinel.localhost}
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/routes.yml:/etc/traefik/routes.yml:ro
@@ -72,6 +94,25 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: brainzlab-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
 
   # ============================================
   # RECALL - Structured Logging
@@ -139,6 +180,147 @@ services:
       redis:
         condition: service_healthy
 
+  # ============================================
+  # FLUX - Feature Flags
+  # ============================================
+  flux:
+    image: ${FLUX_IMAGE:-brainzllc/flux:latest}
+    container_name: brainzlab-flux
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/flux
+      REDIS_URL: redis://redis:6379/4
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${FLUX_MASTER_KEY}
+      SECRET_KEY_BASE: ${FLUX_SECRET_KEY}
+      FLUX_MASTER_KEY: ${FLUX_INGEST_KEY}
+    ports:
+      - "${FLUX_PORT:-3004}:3000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ============================================
+  # SIGNAL - Alerting & Notifications
+  # ============================================
+  signal:
+    image: ${SIGNAL_IMAGE:-brainzllc/signal:latest}
+    container_name: brainzlab-signal
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/signal
+      REDIS_URL: redis://redis:6379/5
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${SIGNAL_MASTER_KEY}
+      SECRET_KEY_BASE: ${SIGNAL_SECRET_KEY}
+      SIGNAL_MASTER_KEY: ${SIGNAL_INGEST_KEY}
+    ports:
+      - "${SIGNAL_PORT:-3005}:3000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ============================================
+  # VAULT - Secrets Management
+  # ============================================
+  vault:
+    image: ${VAULT_IMAGE:-brainzllc/vault:latest}
+    container_name: brainzlab-vault
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vault
+      REDIS_URL: redis://redis:6379/6
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${VAULT_MASTER_KEY}
+      SECRET_KEY_BASE: ${VAULT_SECRET_KEY}
+      VAULT_MASTER_KEY: ${VAULT_INGEST_KEY}
+    ports:
+      - "${VAULT_PORT:-3006}:3000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ============================================
+  # BEACON - Uptime Monitoring
+  # ============================================
+  beacon:
+    image: ${BEACON_IMAGE:-brainzllc/beacon:latest}
+    container_name: brainzlab-beacon
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/beacon
+      REDIS_URL: redis://redis:6379/7
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${BEACON_MASTER_KEY}
+      SECRET_KEY_BASE: ${BEACON_SECRET_KEY}
+      BEACON_MASTER_KEY: ${BEACON_INGEST_KEY}
+      SIGNAL_URL: http://signal:3000
+    ports:
+      - "${BEACON_PORT:-3007}:3000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ============================================
+  # VISION - Visual Regression Testing
+  # ============================================
+  vision:
+    image: ${VISION_IMAGE:-brainzllc/vision:latest}
+    container_name: brainzlab-vision
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vision
+      REDIS_URL: redis://redis:6379/8
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${VISION_MASTER_KEY}
+      SECRET_KEY_BASE: ${VISION_SECRET_KEY}
+      VISION_MASTER_KEY: ${VISION_INGEST_KEY}
+      AWS_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      AWS_BUCKET: vision-screenshots
+    ports:
+      - "${VISION_PORT:-3008}:3000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  # ============================================
+  # SENTINEL - Infrastructure Monitoring
+  # ============================================
+  sentinel:
+    image: ${SENTINEL_IMAGE:-brainzllc/sentinel:latest}
+    container_name: brainzlab-sentinel
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/sentinel
+      REDIS_URL: redis://redis:6379/9
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: ${SENTINEL_MASTER_KEY}
+      SECRET_KEY_BASE: ${SENTINEL_SECRET_KEY}
+      SENTINEL_MASTER_KEY: ${SENTINEL_INGEST_KEY}
+      SIGNAL_URL: http://signal:3000
+    ports:
+      - "${SENTINEL_PORT:-3009}:3000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:
+  minio_data:
