@@ -53,6 +53,11 @@ services:
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/routes.yml:/etc/traefik/routes.yml:ro
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ============================================
   # INFRASTRUCTURE
@@ -128,6 +133,8 @@ services:
       RAILS_MASTER_KEY: ${RECALL_MASTER_KEY}
       SECRET_KEY_BASE: ${RECALL_SECRET_KEY}
       RECALL_MASTER_KEY: ${RECALL_INGEST_KEY}
+      VAULT_URL: http://vault:3000
+      VAULT_API_KEY: ${VAULT_API_KEY}
     ports:
       - "${RECALL_PORT:-3001}:3000"
     depends_on:
@@ -135,6 +142,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      traefik:
+        condition: service_healthy
+      vault:
+        condition: service_started
 
   # ============================================
   # REFLEX - Error Tracking
@@ -150,6 +161,8 @@ services:
       RAILS_MASTER_KEY: ${REFLEX_MASTER_KEY}
       SECRET_KEY_BASE: ${REFLEX_SECRET_KEY}
       REFLEX_MASTER_KEY: ${REFLEX_INGEST_KEY}
+      VAULT_URL: http://vault:3000
+      VAULT_API_KEY: ${VAULT_API_KEY}
     ports:
       - "${REFLEX_PORT:-3002}:3000"
     depends_on:
@@ -157,6 +170,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      traefik:
+        condition: service_healthy
+      vault:
+        condition: service_started
 
   # ============================================
   # PULSE - APM & Performance Monitoring
@@ -172,6 +189,8 @@ services:
       RAILS_MASTER_KEY: ${PULSE_MASTER_KEY}
       SECRET_KEY_BASE: ${PULSE_SECRET_KEY}
       PULSE_MASTER_KEY: ${PULSE_INGEST_KEY}
+      VAULT_URL: http://vault:3000
+      VAULT_API_KEY: ${VAULT_API_KEY}
     ports:
       - "${PULSE_PORT:-3003}:3000"
     depends_on:
@@ -179,6 +198,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      traefik:
+        condition: service_healthy
+      vault:
+        condition: service_started
 
   # ============================================
   # FLUX - Feature Flags
@@ -194,6 +217,8 @@ services:
       RAILS_MASTER_KEY: ${FLUX_MASTER_KEY}
       SECRET_KEY_BASE: ${FLUX_SECRET_KEY}
       FLUX_MASTER_KEY: ${FLUX_INGEST_KEY}
+      VAULT_URL: http://vault:3000
+      VAULT_API_KEY: ${VAULT_API_KEY}
     ports:
       - "${FLUX_PORT:-3004}:3000"
     depends_on:
@@ -201,6 +226,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      traefik:
+        condition: service_healthy
+      vault:
+        condition: service_started
 
   # ============================================
   # SIGNAL - Alerting & Notifications
@@ -216,6 +245,8 @@ services:
       RAILS_MASTER_KEY: ${SIGNAL_MASTER_KEY}
       SECRET_KEY_BASE: ${SIGNAL_SECRET_KEY}
       SIGNAL_MASTER_KEY: ${SIGNAL_INGEST_KEY}
+      VAULT_URL: http://vault:3000
+      VAULT_API_KEY: ${VAULT_API_KEY}
     ports:
       - "${SIGNAL_PORT:-3005}:3000"
     depends_on:
@@ -223,6 +254,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      traefik:
+        condition: service_healthy
+      vault:
+        condition: service_started
 
   # ============================================
   # VAULT - Secrets Management
@@ -245,6 +280,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      traefik:
+        condition: service_healthy
 
   # ============================================
   # BEACON - Uptime Monitoring
@@ -261,6 +298,8 @@ services:
       SECRET_KEY_BASE: ${BEACON_SECRET_KEY}
       BEACON_MASTER_KEY: ${BEACON_INGEST_KEY}
       SIGNAL_URL: http://signal:3000
+      VAULT_URL: http://vault:3000
+      VAULT_API_KEY: ${VAULT_API_KEY}
     ports:
       - "${BEACON_PORT:-3007}:3000"
     depends_on:
@@ -268,6 +307,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      traefik:
+        condition: service_healthy
+      vault:
+        condition: service_started
 
   # ============================================
   # VISION - Visual Regression Testing
@@ -287,6 +330,8 @@ services:
       AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
       AWS_BUCKET: vision-screenshots
+      VAULT_URL: http://vault:3000
+      VAULT_API_KEY: ${VAULT_API_KEY}
     ports:
       - "${VISION_PORT:-3008}:3000"
     depends_on:
@@ -296,6 +341,10 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      traefik:
+        condition: service_healthy
+      vault:
+        condition: service_started
 
   # ============================================
   # SENTINEL - Infrastructure Monitoring
@@ -312,6 +361,8 @@ services:
       SECRET_KEY_BASE: ${SENTINEL_SECRET_KEY}
       SENTINEL_MASTER_KEY: ${SENTINEL_INGEST_KEY}
       SIGNAL_URL: http://signal:3000
+      VAULT_URL: http://vault:3000
+      VAULT_API_KEY: ${VAULT_API_KEY}
     ports:
       - "${SENTINEL_PORT:-3009}:3000"
     depends_on:
@@ -319,6 +370,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      traefik:
+        condition: service_healthy
+      vault:
+        condition: service_started
 
 volumes:
   postgres_data:

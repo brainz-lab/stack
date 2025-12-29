@@ -3,9 +3,14 @@ api:
   insecure: true
   dashboard: true
 
+ping:
+  entryPoint: traefik
+
 entryPoints:
   web:
     address: ":80"
+  traefik:
+    address: ":8080"
 
 providers:
   file:

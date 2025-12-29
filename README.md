@@ -1,17 +1,26 @@
 # Brainz Lab Stack
 
-Self-hosted observability platform for Rails applications.
+Self-hosted observability and developer tools platform for Rails applications.
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-brainzlab.ai-orange)](https://docs.brainzlab.ai/self-hosting/overview)
 
 ## Overview
 
-Brainz Lab provides complete observability for your Rails apps:
+Brainz Lab provides complete observability and developer tools for your Rails apps:
 
+**Observability**
 - **Recall** - Structured logging with powerful search
 - **Reflex** - Error tracking with smart grouping
 - **Pulse** - APM with distributed tracing
+- **Beacon** - Uptime monitoring and status pages
+- **Sentinel** - Infrastructure and host monitoring
+
+**Developer Tools**
+- **Signal** - Alerting and notifications hub
+- **Flux** - Feature flags and experiments
+- **Vault** - Secrets management
+- **Vision** - Visual regression testing
 
 ## Quick Install
 
@@ -31,15 +40,32 @@ cd stack
 ## Requirements
 
 - Docker & Docker Compose
-- 2GB RAM minimum (4GB recommended)
+- 4GB RAM minimum (8GB recommended for full stack)
 
 ## Services
 
+### Application Services
+
+| Service | Port | Subdomain | Description |
+|---------|------|-----------|-------------|
+| Recall | 3001 | recall.localhost | Structured logging |
+| Reflex | 3002 | reflex.localhost | Error tracking |
+| Pulse | 3003 | pulse.localhost | APM & tracing |
+| Flux | 3004 | flux.localhost | Feature flags |
+| Signal | 3005 | signal.localhost | Alerting hub |
+| Vault | 3006 | vault.localhost | Secrets management |
+| Beacon | 3007 | beacon.localhost | Uptime monitoring |
+| Vision | 3008 | vision.localhost | Visual testing |
+| Sentinel | 3009 | sentinel.localhost | Infrastructure monitoring |
+
+### Infrastructure Services
+
 | Service | Port | Description |
 |---------|------|-------------|
-| Recall | 3001 | Structured logging |
-| Reflex | 3002 | Error tracking |
-| Pulse | 3003 | APM & tracing |
+| Traefik | 80, 8080 | Reverse proxy (dashboard on 8080) |
+| TimescaleDB | 5432 | PostgreSQL with time-series extensions |
+| Redis | 6379 | Cache and job queues |
+| MinIO | 9000, 9001 | S3-compatible object storage |
 
 ## Usage
 
@@ -68,6 +94,28 @@ cd stack
 ./scripts/reset.sh
 ```
 
+## Accessing Services
+
+### Via Subdomains (Recommended)
+
+Traefik routes requests based on subdomain. Add to `/etc/hosts`:
+
+```
+127.0.0.1 recall.localhost reflex.localhost pulse.localhost
+127.0.0.1 flux.localhost signal.localhost vault.localhost
+127.0.0.1 beacon.localhost vision.localhost sentinel.localhost
+```
+
+Then access: `http://recall.localhost`, `http://reflex.localhost`, etc.
+
+### Via Direct Ports
+
+Access services directly: `http://localhost:3001` (Recall), `http://localhost:3002` (Reflex), etc.
+
+### Traefik Dashboard
+
+View routing and health: `http://localhost:8080`
+
 ## Integrate with Your App
 
 ### 1. Add the SDK
@@ -85,9 +133,12 @@ BrainzLab.configure do |config|
   config.secret_key = ENV['BRAINZLAB_SECRET_KEY']
 
   # Self-hosted URLs (via Traefik subdomains)
-  config.recall_url = ENV['RECALL_URL']  # http://recall.localhost or https://recall.yourdomain.com
-  config.reflex_url = ENV['REFLEX_URL']  # http://reflex.localhost or https://reflex.yourdomain.com
-  config.pulse_url  = ENV['PULSE_URL']   # http://pulse.localhost or https://pulse.yourdomain.com
+  config.recall_url = ENV['RECALL_URL']   # http://recall.localhost
+  config.reflex_url = ENV['REFLEX_URL']   # http://reflex.localhost
+  config.pulse_url  = ENV['PULSE_URL']    # http://pulse.localhost
+  config.signal_url = ENV['SIGNAL_URL']   # http://signal.localhost
+  config.flux_url   = ENV['FLUX_URL']     # http://flux.localhost
+  config.vault_url  = ENV['VAULT_URL']    # http://vault.localhost
 end
 ```
 
@@ -108,6 +159,17 @@ BrainzLab::Reflex.capture(exception, user: current_user)
 # Custom metrics
 BrainzLab::Pulse.increment("orders.created")
 BrainzLab::Pulse.gauge("queue.size", Sidekiq::Queue.new.size)
+
+# Feature flags
+if BrainzLab::Flux.enabled?(:new_checkout, user: current_user)
+  # New checkout flow
+end
+
+# Secrets
+api_key = BrainzLab::Vault.get("stripe/api_key")
+
+# Alerts
+BrainzLab::Signal.trigger("high_error_rate", severity: :critical)
 ```
 
 ## Configuration
@@ -122,10 +184,31 @@ cp .env.example .env
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `POSTGRES_USER` | Database user | `brainzlab` |
 | `POSTGRES_PASSWORD` | Database password | `brainzlab` |
 | `RECALL_PORT` | Recall port | `3001` |
 | `REFLEX_PORT` | Reflex port | `3002` |
 | `PULSE_PORT` | Pulse port | `3003` |
+| `FLUX_PORT` | Flux port | `3004` |
+| `SIGNAL_PORT` | Signal port | `3005` |
+| `VAULT_PORT` | Vault port | `3006` |
+| `BEACON_PORT` | Beacon port | `3007` |
+| `VISION_PORT` | Vision port | `3008` |
+| `SENTINEL_PORT` | Sentinel port | `3009` |
+
+### Subdomain Configuration (Production)
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `RECALL_HOST` | Recall subdomain | `recall.localhost` |
+| `REFLEX_HOST` | Reflex subdomain | `reflex.localhost` |
+| `PULSE_HOST` | Pulse subdomain | `pulse.localhost` |
+| `FLUX_HOST` | Flux subdomain | `flux.localhost` |
+| `SIGNAL_HOST` | Signal subdomain | `signal.localhost` |
+| `VAULT_HOST` | Vault subdomain | `vault.localhost` |
+| `BEACON_HOST` | Beacon subdomain | `beacon.localhost` |
+| `VISION_HOST` | Vision subdomain | `vision.localhost` |
+| `SENTINEL_HOST` | Sentinel subdomain | `sentinel.localhost` |
 
 ### Using GitHub Container Registry
 
@@ -135,41 +218,89 @@ To use GHCR instead of Docker Hub:
 RECALL_IMAGE=ghcr.io/brainz-lab/recall:latest
 REFLEX_IMAGE=ghcr.io/brainz-lab/reflex:latest
 PULSE_IMAGE=ghcr.io/brainz-lab/pulse:latest
+# ... etc for other services
 ```
 
 ## Production Deployment
 
-For production, we recommend:
+### Prerequisites
 
-1. **Use a managed database** (RDS, Cloud SQL, etc.)
-2. **Set up HTTPS** with a reverse proxy (nginx, Traefik, Caddy)
+1. **Use a managed database** (RDS, Cloud SQL, etc.) or secure your TimescaleDB
+2. **Set up HTTPS** - Traefik can handle Let's Encrypt automatically
 3. **Configure proper secrets** in `.env`
-4. **Set up backups** for PostgreSQL
+4. **Set up backups** for PostgreSQL and MinIO
+
+### DNS Configuration
+
+Set up DNS records pointing to your server:
+
+```
+recall.yourdomain.com    → Your server IP
+reflex.yourdomain.com    → Your server IP
+pulse.yourdomain.com     → Your server IP
+flux.yourdomain.com      → Your server IP
+signal.yourdomain.com    → Your server IP
+vault.yourdomain.com     → Your server IP
+beacon.yourdomain.com    → Your server IP
+vision.yourdomain.com    → Your server IP
+sentinel.yourdomain.com  → Your server IP
+```
 
 ### Environment Variables for Production
 
 ```env
-# Required
+# Database
+POSTGRES_USER=brainzlab
 POSTGRES_PASSWORD=<strong-password>
+
+# Master keys (generate with: openssl rand -hex 32)
 RECALL_MASTER_KEY=<generated-key>
 REFLEX_MASTER_KEY=<generated-key>
 PULSE_MASTER_KEY=<generated-key>
+FLUX_MASTER_KEY=<generated-key>
+SIGNAL_MASTER_KEY=<generated-key>
+VAULT_MASTER_KEY=<generated-key>
+BEACON_MASTER_KEY=<generated-key>
+VISION_MASTER_KEY=<generated-key>
+SENTINEL_MASTER_KEY=<generated-key>
+
+# SDK key for your apps
 BRAINZLAB_SECRET_KEY=<generated-key>
 
-# URLs (Traefik subdomains - your domain)
-RECALL_URL=https://recall.yourdomain.com
-REFLEX_URL=https://reflex.yourdomain.com
-PULSE_URL=https://pulse.yourdomain.com
+# Subdomains (your domain)
+RECALL_HOST=recall.yourdomain.com
+REFLEX_HOST=reflex.yourdomain.com
+PULSE_HOST=pulse.yourdomain.com
+FLUX_HOST=flux.yourdomain.com
+SIGNAL_HOST=signal.yourdomain.com
+VAULT_HOST=vault.yourdomain.com
+BEACON_HOST=beacon.yourdomain.com
+VISION_HOST=vision.yourdomain.com
+SENTINEL_HOST=sentinel.yourdomain.com
 ```
 
-### DNS Configuration
+### Traefik with HTTPS
 
-Set up DNS records for your Traefik subdomains:
+Update `traefik/traefik.yml` for production with Let's Encrypt:
 
-```
-recall.yourdomain.com  → Your server IP
-reflex.yourdomain.com  → Your server IP
-pulse.yourdomain.com   → Your server IP
+```yaml
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+  websecure:
+    address: ":443"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: your-email@example.com
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: web
 ```
 
 ## Architecture
@@ -180,23 +311,83 @@ pulse.yourdomain.com   → Your server IP
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────┐    │
 │  │                    brainzlab gem                         │    │
-│  │  Recall (logs) │ Reflex (errors) │ Pulse (traces)       │    │
+│  │  Recall │ Reflex │ Pulse │ Signal │ Flux │ Vault        │    │
 │  └─────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Brainz Lab Stack                            │
-│                                                                  │
-│       ┌──────────┐    ┌──────────┐    ┌──────────┐             │
-│       │  Recall  │    │  Reflex  │    │  Pulse   │             │
-│       │  :3001   │    │  :3002   │    │  :3003   │             │
-│       └────┬─────┘    └────┬─────┘    └────┬─────┘             │
-│            │               │               │                    │
-│       ┌────┴───────────────┴───────────────┴────┐              │
-│       │          PostgreSQL + Redis              │              │
-│       └──────────────────────────────────────────┘              │
+│                         Traefik                                  │
+│              (Reverse Proxy + Load Balancer)                     │
+│         recall.* │ reflex.* │ pulse.* │ ...                     │
 └─────────────────────────────────────────────────────────────────┘
+                              │
+     ┌────────────────────────┼────────────────────────┐
+     ▼                        ▼                        ▼
+┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐
+│ Recall  │  │ Reflex  │  │  Pulse  │  │  Flux   │  │ Signal  │
+│  :3001  │  │  :3002  │  │  :3003  │  │  :3004  │  │  :3005  │
+└────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘
+     │            │            │            │            │
+     └────────────┴────────────┴────────────┴────────────┘
+                              │
+     ┌────────────────────────┼────────────────────────┐
+     ▼                        ▼                        ▼
+┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐
+│  Vault  │  │ Beacon  │  │ Vision  │  │Sentinel │  │  MinIO  │
+│  :3006  │  │  :3007  │  │  :3008  │  │  :3009  │  │  :9000  │
+└────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘  └─────────┘
+     │            │            │            │
+     └────────────┴────────────┴────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+       ┌─────────────┐                 ┌─────────────┐
+       │ TimescaleDB │                 │    Redis    │
+       │    :5432    │                 │    :6379    │
+       └─────────────┘                 └─────────────┘
+```
+
+## Health Checks
+
+All services expose a `/up` endpoint for health checks:
+
+```bash
+curl http://localhost:3001/up  # Recall
+curl http://localhost:3002/up  # Reflex
+# ... etc
+```
+
+Traefik dashboard shows service health: `http://localhost:8080`
+
+## Troubleshooting
+
+### Services won't start
+
+Check if ports are in use:
+```bash
+lsof -i :3001  # Check if port is taken
+```
+
+### Database connection errors
+
+Ensure TimescaleDB is healthy:
+```bash
+docker-compose ps timescaledb
+docker-compose logs timescaledb
+```
+
+### Traefik routing issues
+
+Check Traefik dashboard at `http://localhost:8080` for:
+- Service health (green = healthy)
+- Router configuration
+- Active routes
+
+### View all logs
+
+```bash
+docker-compose logs -f
 ```
 
 ## Documentation
@@ -209,6 +400,12 @@ Full documentation: [docs.brainzlab.ai/self-hosting](https://docs.brainzlab.ai/s
 - [Recall](https://github.com/brainz-lab/recall) - Logging service
 - [Reflex](https://github.com/brainz-lab/reflex) - Error tracking service
 - [Pulse](https://github.com/brainz-lab/pulse) - APM service
+- [Flux](https://github.com/brainz-lab/flux) - Feature flags service
+- [Signal](https://github.com/brainz-lab/signal) - Alerting service
+- [Vault](https://github.com/brainz-lab/vault) - Secrets service
+- [Beacon](https://github.com/brainz-lab/beacon) - Uptime monitoring service
+- [Vision](https://github.com/brainz-lab/vision) - Visual testing service
+- [Sentinel](https://github.com/brainz-lab/sentinel) - Infrastructure monitoring service
 
 ## License
 
