@@ -131,7 +131,7 @@ services:
       REDIS_URL: redis://redis:6379/1
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${RECALL_MASTER_KEY}
-      SECRET_KEY_BASE: ${RECALL_SECRET_KEY}
+      SECRET_KEY_BASE: ${RECALL_SECRET_KEY:-devkey_brainzlab_recall_not_for_production_use_1234567890abcdef}
       RECALL_MASTER_KEY: ${RECALL_INGEST_KEY}
       VAULT_URL: http://vault:3000
       VAULT_API_KEY: ${VAULT_API_KEY}
@@ -159,7 +159,7 @@ services:
       REDIS_URL: redis://redis:6379/2
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${REFLEX_MASTER_KEY}
-      SECRET_KEY_BASE: ${REFLEX_SECRET_KEY}
+      SECRET_KEY_BASE: ${REFLEX_SECRET_KEY:-devkey_brainzlab_reflex_not_for_production_use_1234567890abcdef}
       REFLEX_MASTER_KEY: ${REFLEX_INGEST_KEY}
       VAULT_URL: http://vault:3000
       VAULT_API_KEY: ${VAULT_API_KEY}
@@ -187,7 +187,7 @@ services:
       REDIS_URL: redis://redis:6379/3
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${PULSE_MASTER_KEY}
-      SECRET_KEY_BASE: ${PULSE_SECRET_KEY}
+      SECRET_KEY_BASE: ${PULSE_SECRET_KEY:-devkey_brainzlab_pulse_not_for_production_use_1234567890abcdef}
       PULSE_MASTER_KEY: ${PULSE_INGEST_KEY}
       VAULT_URL: http://vault:3000
       VAULT_API_KEY: ${VAULT_API_KEY}
@@ -215,7 +215,7 @@ services:
       REDIS_URL: redis://redis:6379/4
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${FLUX_MASTER_KEY}
-      SECRET_KEY_BASE: ${FLUX_SECRET_KEY}
+      SECRET_KEY_BASE: ${FLUX_SECRET_KEY:-devkey_brainzlab_flux_not_for_production_use_1234567890abcdef}
       FLUX_MASTER_KEY: ${FLUX_INGEST_KEY}
       VAULT_URL: http://vault:3000
       VAULT_API_KEY: ${VAULT_API_KEY}
@@ -243,7 +243,7 @@ services:
       REDIS_URL: redis://redis:6379/5
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${SIGNAL_MASTER_KEY}
-      SECRET_KEY_BASE: ${SIGNAL_SECRET_KEY}
+      SECRET_KEY_BASE: ${SIGNAL_SECRET_KEY:-devkey_brainzlab_signal_not_for_production_use_1234567890abcdef}
       SIGNAL_MASTER_KEY: ${SIGNAL_INGEST_KEY}
       VAULT_URL: http://vault:3000
       VAULT_API_KEY: ${VAULT_API_KEY}
@@ -271,7 +271,7 @@ services:
       REDIS_URL: redis://redis:6379/6
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${VAULT_MASTER_KEY}
-      SECRET_KEY_BASE: ${VAULT_SECRET_KEY}
+      SECRET_KEY_BASE: ${VAULT_SECRET_KEY:-devkey_brainzlab_vault_not_for_production_use_1234567890abcdef}
       VAULT_MASTER_KEY: ${VAULT_INGEST_KEY}
     ports:
       - "${VAULT_PORT:-3006}:3000"
@@ -295,7 +295,7 @@ services:
       REDIS_URL: redis://redis:6379/7
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${BEACON_MASTER_KEY}
-      SECRET_KEY_BASE: ${BEACON_SECRET_KEY}
+      SECRET_KEY_BASE: ${BEACON_SECRET_KEY:-devkey_brainzlab_beacon_not_for_production_use_1234567890abcdef}
       BEACON_MASTER_KEY: ${BEACON_INGEST_KEY}
       SIGNAL_URL: http://signal:3000
       VAULT_URL: http://vault:3000
@@ -324,7 +324,7 @@ services:
       REDIS_URL: redis://redis:6379/8
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${VISION_MASTER_KEY}
-      SECRET_KEY_BASE: ${VISION_SECRET_KEY}
+      SECRET_KEY_BASE: ${VISION_SECRET_KEY:-devkey_brainzlab_vision_not_for_production_use_1234567890abcdef}
       VISION_MASTER_KEY: ${VISION_INGEST_KEY}
       AWS_ENDPOINT: http://minio:9000
       AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
@@ -358,7 +358,7 @@ services:
       REDIS_URL: redis://redis:6379/9
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${SENTINEL_MASTER_KEY}
-      SECRET_KEY_BASE: ${SENTINEL_SECRET_KEY}
+      SECRET_KEY_BASE: ${SENTINEL_SECRET_KEY:-devkey_brainzlab_sentinel_not_for_production_use_1234567890abcdef}
       SENTINEL_MASTER_KEY: ${SENTINEL_INGEST_KEY}
       SIGNAL_URL: http://signal:3000
       VAULT_URL: http://vault:3000
