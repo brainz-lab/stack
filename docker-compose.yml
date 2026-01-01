@@ -273,6 +273,7 @@ services:
       RAILS_MASTER_KEY: ${VAULT_MASTER_KEY}
       SECRET_KEY_BASE: ${VAULT_SECRET_KEY:-devkey_brainzlab_vault_not_for_production_use_1234567890abcdef}
       VAULT_MASTER_KEY: ${VAULT_INGEST_KEY}
+      VAULT_STANDALONE_MODE: "true"
     ports:
       - "${VAULT_PORT:-3006}:3000"
     depends_on:
