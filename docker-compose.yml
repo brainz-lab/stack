@@ -134,7 +134,7 @@ services:
       SECRET_KEY_BASE: ${RECALL_SECRET_KEY:-devkey_brainzlab_recall_not_for_production_use_1234567890abcdef}
       RECALL_MASTER_KEY: ${RECALL_INGEST_KEY}
       VAULT_URL: http://vault:3000
-      VAULT_API_KEY: ${VAULT_API_KEY}
+      VAULT_API_KEY: ${VAULT_API_KEY:-}
     ports:
       - "${RECALL_PORT:-3001}:3000"
     depends_on:
@@ -162,7 +162,7 @@ services:
       SECRET_KEY_BASE: ${REFLEX_SECRET_KEY:-devkey_brainzlab_reflex_not_for_production_use_1234567890abcdef}
       REFLEX_MASTER_KEY: ${REFLEX_INGEST_KEY}
       VAULT_URL: http://vault:3000
-      VAULT_API_KEY: ${VAULT_API_KEY}
+      VAULT_API_KEY: ${VAULT_API_KEY:-}
     ports:
       - "${REFLEX_PORT:-3002}:3000"
     depends_on:
@@ -190,7 +190,7 @@ services:
       SECRET_KEY_BASE: ${PULSE_SECRET_KEY:-devkey_brainzlab_pulse_not_for_production_use_1234567890abcdef}
       PULSE_MASTER_KEY: ${PULSE_INGEST_KEY}
       VAULT_URL: http://vault:3000
-      VAULT_API_KEY: ${VAULT_API_KEY}
+      VAULT_API_KEY: ${VAULT_API_KEY:-}
     ports:
       - "${PULSE_PORT:-3003}:3000"
     depends_on:
@@ -218,7 +218,7 @@ services:
       SECRET_KEY_BASE: ${FLUX_SECRET_KEY:-devkey_brainzlab_flux_not_for_production_use_1234567890abcdef}
       FLUX_MASTER_KEY: ${FLUX_INGEST_KEY}
       VAULT_URL: http://vault:3000
-      VAULT_API_KEY: ${VAULT_API_KEY}
+      VAULT_API_KEY: ${VAULT_API_KEY:-}
     ports:
       - "${FLUX_PORT:-3004}:3000"
     depends_on:
@@ -246,7 +246,7 @@ services:
       SECRET_KEY_BASE: ${SIGNAL_SECRET_KEY:-devkey_brainzlab_signal_not_for_production_use_1234567890abcdef}
       SIGNAL_MASTER_KEY: ${SIGNAL_INGEST_KEY}
       VAULT_URL: http://vault:3000
-      VAULT_API_KEY: ${VAULT_API_KEY}
+      VAULT_API_KEY: ${VAULT_API_KEY:-}
     ports:
       - "${SIGNAL_PORT:-3005}:3000"
     depends_on:
@@ -299,7 +299,7 @@ services:
       BEACON_MASTER_KEY: ${BEACON_INGEST_KEY}
       SIGNAL_URL: http://signal:3000
       VAULT_URL: http://vault:3000
-      VAULT_API_KEY: ${VAULT_API_KEY}
+      VAULT_API_KEY: ${VAULT_API_KEY:-}
     ports:
       - "${BEACON_PORT:-3007}:3000"
     depends_on:
@@ -331,7 +331,7 @@ services:
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
       AWS_BUCKET: vision-screenshots
       VAULT_URL: http://vault:3000
-      VAULT_API_KEY: ${VAULT_API_KEY}
+      VAULT_API_KEY: ${VAULT_API_KEY:-}
     ports:
       - "${VISION_PORT:-3008}:3000"
     depends_on:
@@ -362,7 +362,7 @@ services:
       SENTINEL_MASTER_KEY: ${SENTINEL_INGEST_KEY}
       SIGNAL_URL: http://signal:3000
       VAULT_URL: http://vault:3000
-      VAULT_API_KEY: ${VAULT_API_KEY}
+      VAULT_API_KEY: ${VAULT_API_KEY:-}
     ports:
       - "${SENTINEL_PORT:-3009}:3000"
     depends_on:
