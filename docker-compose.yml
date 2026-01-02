@@ -63,7 +63,7 @@ services:
   # INFRASTRUCTURE
   # ============================================
   timescaledb:
-    image: timescale/timescaledb:latest-pg18
+    image: brainzllc/db:latest
     container_name: brainzlab-timescaledb
     restart: unless-stopped
     environment:
@@ -71,7 +71,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brainzlab}
       POSTGRES_DB: ${POSTGRES_DB:-brainzlab}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -84,6 +84,8 @@ services:
       postgres
       -c shared_preload_libraries=timescaledb
       -c timescaledb.telemetry_level=off
+      -c max_worker_processes=64
+      -c timescaledb.max_background_workers=32
 
   redis:
     image: redis:7-alpine
