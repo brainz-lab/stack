@@ -8,3 +8,6 @@ Thumbs.db
 
 # Data
 *.log
+
+# Secrets (NEVER commit)
+.secrets.md
