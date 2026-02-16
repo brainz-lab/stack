@@ -128,8 +128,14 @@ services:
     image: ${RECALL_IMAGE:-brainzllc/recall:latest}
     container_name: brainzlab-recall
     restart: unless-stopped
+    volumes:
+      - ./scripts/rails-entrypoint.sh:/rails/entrypoint.sh:ro
+    command: bash /rails/entrypoint.sh
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/recall
+      QUEUE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/recall_queue
+      CACHE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/recall_cache
+      CABLE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/recall_cable
       REDIS_URL: redis://redis:6379/1
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${RECALL_MASTER_KEY}
@@ -147,7 +153,7 @@ services:
       traefik:
         condition: service_healthy
       vault:
-        condition: service_started
+        condition: service_healthy
 
   # ============================================
   # REFLEX - Error Tracking
@@ -156,8 +162,14 @@ services:
     image: ${REFLEX_IMAGE:-brainzllc/reflex:latest}
     container_name: brainzlab-reflex
     restart: unless-stopped
+    volumes:
+      - ./scripts/rails-entrypoint.sh:/rails/entrypoint.sh:ro
+    command: bash /rails/entrypoint.sh
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/reflex
+      QUEUE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/reflex_queue
+      CACHE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/reflex_cache
+      CABLE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/reflex_cable
       REDIS_URL: redis://redis:6379/2
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${REFLEX_MASTER_KEY}
@@ -175,7 +187,7 @@ services:
       traefik:
         condition: service_healthy
       vault:
-        condition: service_started
+        condition: service_healthy
 
   # ============================================
   # PULSE - APM & Performance Monitoring
@@ -184,8 +196,14 @@ services:
     image: ${PULSE_IMAGE:-brainzllc/pulse:latest}
     container_name: brainzlab-pulse
     restart: unless-stopped
+    volumes:
+      - ./scripts/rails-entrypoint.sh:/rails/entrypoint.sh:ro
+    command: bash /rails/entrypoint.sh
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/pulse
+      QUEUE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/pulse_queue
+      CACHE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/pulse_cache
+      CABLE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/pulse_cable
       REDIS_URL: redis://redis:6379/3
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${PULSE_MASTER_KEY}
@@ -203,7 +221,7 @@ services:
       traefik:
         condition: service_healthy
       vault:
-        condition: service_started
+        condition: service_healthy
 
   # ============================================
   # FLUX - Feature Flags
@@ -212,8 +230,14 @@ services:
     image: ${FLUX_IMAGE:-brainzllc/flux:latest}
     container_name: brainzlab-flux
     restart: unless-stopped
+    volumes:
+      - ./scripts/rails-entrypoint.sh:/rails/entrypoint.sh:ro
+    command: bash /rails/entrypoint.sh
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/flux
+      QUEUE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/flux_queue
+      CACHE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/flux_cache
+      CABLE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/flux_cable
       REDIS_URL: redis://redis:6379/4
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${FLUX_MASTER_KEY}
@@ -231,7 +255,7 @@ services:
       traefik:
         condition: service_healthy
       vault:
-        condition: service_started
+        condition: service_healthy
 
   # ============================================
   # SIGNAL - Alerting & Notifications
@@ -240,8 +264,14 @@ services:
     image: ${SIGNAL_IMAGE:-brainzllc/signal:latest}
     container_name: brainzlab-signal
     restart: unless-stopped
+    volumes:
+      - ./scripts/rails-entrypoint.sh:/rails/entrypoint.sh:ro
+    command: bash /rails/entrypoint.sh
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/signal
+      QUEUE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/signal_queue
+      CACHE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/signal_cache
+      CABLE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/signal_cable
       REDIS_URL: redis://redis:6379/5
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${SIGNAL_MASTER_KEY}
@@ -259,7 +289,7 @@ services:
       traefik:
         condition: service_healthy
       vault:
-        condition: service_started
+        condition: service_healthy
 
   # ============================================
   # VAULT - Secrets Management
@@ -268,8 +298,14 @@ services:
     image: ${VAULT_IMAGE:-brainzllc/vault:latest}
     container_name: brainzlab-vault
     restart: unless-stopped
+    volumes:
+      - ./scripts/rails-entrypoint.sh:/rails/entrypoint.sh:ro
+    command: bash /rails/entrypoint.sh
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vault
+      QUEUE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vault_queue
+      CACHE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vault_cache
+      CABLE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vault_cable
       REDIS_URL: redis://redis:6379/6
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${VAULT_MASTER_KEY}
@@ -278,6 +314,12 @@ services:
       VAULT_STANDALONE_MODE: "true"
     ports:
       - "${VAULT_PORT:-3006}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/up || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       timescaledb:
         condition: service_healthy
@@ -293,8 +335,14 @@ services:
     image: ${BEACON_IMAGE:-brainzllc/beacon:latest}
     container_name: brainzlab-beacon
     restart: unless-stopped
+    volumes:
+      - ./scripts/rails-entrypoint.sh:/rails/entrypoint.sh:ro
+    command: bash /rails/entrypoint.sh
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/beacon
+      QUEUE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/beacon_queue
+      CACHE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/beacon_cache
+      CABLE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/beacon_cable
       REDIS_URL: redis://redis:6379/7
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${BEACON_MASTER_KEY}
@@ -313,7 +361,7 @@ services:
       traefik:
         condition: service_healthy
       vault:
-        condition: service_started
+        condition: service_healthy
 
   # ============================================
   # VISION - Visual Regression Testing
@@ -322,8 +370,14 @@ services:
     image: ${VISION_IMAGE:-brainzllc/vision:latest}
     container_name: brainzlab-vision
     restart: unless-stopped
+    volumes:
+      - ./scripts/rails-entrypoint.sh:/rails/entrypoint.sh:ro
+    command: bash /rails/entrypoint.sh
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vision
+      QUEUE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vision_queue
+      CACHE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vision_cache
+      CABLE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/vision_cable
       REDIS_URL: redis://redis:6379/8
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${VISION_MASTER_KEY}
@@ -347,7 +401,7 @@ services:
       traefik:
         condition: service_healthy
       vault:
-        condition: service_started
+        condition: service_healthy
 
   # ============================================
   # SENTINEL - Infrastructure Monitoring
@@ -356,8 +410,15 @@ services:
     image: ${SENTINEL_IMAGE:-brainzllc/sentinel:latest}
     container_name: brainzlab-sentinel
     restart: unless-stopped
+    user: "0:0"
+    volumes:
+      - ./scripts/rails-entrypoint.sh:/rails/entrypoint.sh:ro
+    command: bash /rails/entrypoint.sh
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/sentinel
+      QUEUE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/sentinel_queue
+      CACHE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/sentinel_cache
+      CABLE_DATABASE_URL: postgres://${POSTGRES_USER:-brainzlab}:${POSTGRES_PASSWORD:-brainzlab}@timescaledb:5432/sentinel_cable
       REDIS_URL: redis://redis:6379/9
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${SENTINEL_MASTER_KEY}
@@ -376,7 +437,7 @@ services:
       traefik:
         condition: service_healthy
       vault:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   postgres_data:

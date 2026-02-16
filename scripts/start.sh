@@ -22,9 +22,18 @@ extract_host() {
 RECALL_HOST=$(extract_host "${RECALL_URL:-http://recall.localhost}")
 REFLEX_HOST=$(extract_host "${REFLEX_URL:-http://reflex.localhost}")
 PULSE_HOST=$(extract_host "${PULSE_URL:-http://pulse.localhost}")
+FLUX_HOST=$(extract_host "${FLUX_URL:-http://flux.localhost}")
+SIGNAL_HOST=$(extract_host "${SIGNAL_URL:-http://signal.localhost}")
+VAULT_HOST=$(extract_host "${VAULT_URL:-http://vault.localhost}")
+BEACON_HOST=$(extract_host "${BEACON_URL:-http://beacon.localhost}")
+VISION_HOST=$(extract_host "${VISION_URL:-http://vision.localhost}")
+SENTINEL_HOST=$(extract_host "${SENTINEL_URL:-http://sentinel.localhost}")
 
 # Export for Traefik
-export RECALL_HOST REFLEX_HOST PULSE_HOST
+export RECALL_HOST REFLEX_HOST PULSE_HOST FLUX_HOST SIGNAL_HOST VAULT_HOST BEACON_HOST VISION_HOST SENTINEL_HOST
+
+# Clean up any stale containers from previous runs
+docker-compose down --remove-orphans 2>/dev/null || true
 
 # Start services
 docker-compose up -d
@@ -40,7 +49,7 @@ echo "🔍 Checking service health..."
 check_service() {
   local name=$1
   local url=$2
-  local max_attempts=30
+  local max_attempts=60
   local attempt=1
 
   while [ $attempt -le $max_attempts ]; do
@@ -56,17 +65,29 @@ check_service() {
   return 0
 }
 
+check_service "Vault" "${VAULT_URL:-http://vault.localhost}"
 check_service "Recall" "${RECALL_URL:-http://recall.localhost}"
 check_service "Reflex" "${REFLEX_URL:-http://reflex.localhost}"
 check_service "Pulse" "${PULSE_URL:-http://pulse.localhost}"
+check_service "Flux" "${FLUX_URL:-http://flux.localhost}"
+check_service "Signal" "${SIGNAL_URL:-http://signal.localhost}"
+check_service "Beacon" "${BEACON_URL:-http://beacon.localhost}"
+check_service "Vision" "${VISION_URL:-http://vision.localhost}"
+check_service "Sentinel" "${SENTINEL_URL:-http://sentinel.localhost}"
 
 echo ""
 echo "✅ Brainz Lab Stack is running!"
 echo ""
 echo "📍 Services (via Traefik):"
+echo "   Vault:    ${VAULT_URL:-http://vault.localhost}"
 echo "   Recall:   ${RECALL_URL:-http://recall.localhost}"
 echo "   Reflex:   ${REFLEX_URL:-http://reflex.localhost}"
 echo "   Pulse:    ${PULSE_URL:-http://pulse.localhost}"
+echo "   Flux:     ${FLUX_URL:-http://flux.localhost}"
+echo "   Signal:   ${SIGNAL_URL:-http://signal.localhost}"
+echo "   Beacon:   ${BEACON_URL:-http://beacon.localhost}"
+echo "   Vision:   ${VISION_URL:-http://vision.localhost}"
+echo "   Sentinel: ${SENTINEL_URL:-http://sentinel.localhost}"
 echo ""
 echo "📊 View logs: ./scripts/logs.sh [service]"
 echo "🛑 Stop:      ./scripts/stop.sh"
