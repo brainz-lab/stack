@@ -28,15 +28,6 @@ Brainz Lab provides complete observability and developer tools for your Rails ap
 curl -fsSL https://raw.githubusercontent.com/brainz-lab/stack/main/install.sh | bash
 ```
 
-Or manually:
-
-```bash
-git clone https://github.com/brainz-lab/stack.git
-cd stack
-./scripts/setup.sh
-./scripts/start.sh
-```
-
 ## Requirements
 
 - Docker & Docker Compose
